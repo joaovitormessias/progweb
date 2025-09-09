@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-center">Produtos</h1>
+
+{% if produtos %}
+    <div class="product-grid">
+        {% for produto in produtos %}
+        <div class="col-md-4">
+            {% include 'partials/_card_produto.html' %}
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info" style="margin-top: 40px;">
+        Nenhum produto encontrado.
+    </div>
+{% endif %}
+
+{% endblock %}
