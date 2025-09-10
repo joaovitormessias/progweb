@@ -21,3 +21,8 @@ class ProdutoDetailView(DetailView):
     template_name = 'produto_detail.html'
     context_object_name = 'produto'
 
+def lista_produtos_filtrada(request):
+    f = ProdutoFilter(request.GET, queryset=Produto.objects.all())
+    return render(request, 'lista_produtos_filtrada.html', {'filter': f})
+
+
