@@ -12,7 +12,7 @@ class RegistroForm(forms.ModelForm):
     )
 
     class Meta:
-        Model = User 
+        model = User 
         fields = ('username', 'first_name', 'email')
 
     def clean_password2(self):

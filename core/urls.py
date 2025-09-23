@@ -22,6 +22,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('loja.urls')),
+    path('conta/', include('django.contrib.auth.urls')), # Para login, logout, etc.
+    path('conta/', include('conta.urls')),
 ]
 
 if settings.DEBUG:

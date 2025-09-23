@@ -4,28 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <title>Minha Loja</title>
-    <link rel="stylesheet" href="{% static 'loja/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
 
-    <nav class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'lista_produtos' %}">Loja</a>
-            <div class="menu">
+    <nav>
+        <div>
+            <a href="{% url 'lista_produtos' %}">Loja</a>
+            <div>
                 <a href="{% url 'lista_produtos' %}">Produtos</a>
                 <a href="{% url 'produtos_filtrados' %}">Pesquisar</a>
                 <a href="#">Sobre</a>
                 <a href="#">Contato</a>
-      
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'ver_carrinho' %}">Carrinho ({{ carrinho|length }})</a>
+
+                    <div>
+                        <button id="userMenuButton">
+                            Olá, {{ user.first_name|default:user.username }}! &#9662;
+                        </button>
+                        
+                        <div id="userDropdownMenu">
+                            <form action="{% url 'minha_conta' %}" method="get">
+                                <button type="submit">Minha Conta</button>
+                            </form>
+
+                            <hr>
+
+                            <form action="{% url 'logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit">Sair</button>
+                            </form>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'registrar' %}">Registrar</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %} 
+        
         {% block content %}
         {% endblock %}
-        </div>
     </main>
 
-    <footer class="footer">
+    <footer>
         <p>Loja</p>
     </footer>
 
