@@ -1,182 +1,60 @@
+# ProgWeb — Django Storefront
 
+**Browse products, maintain a session cart, and complete a simulated stock checkout.**
 
-# 🛍️ ProgWeb — E-commerce em Django
+An academic Django storefront with account registration, product pages, filtering, and a server-rendered cart. Checkout updates inventory; it does not charge a payment method or create a durable order ledger.
 
-Um projeto de e-commerce completo desenvolvido com **Django 5**, focado em boas práticas, arquitetura modular e integração simplificada com ambientes de deploy (ex: **PythonAnywhere**).
+**Python · Django · SQLite · Server-rendered HTML/CSS**
 
----
+## Product workflow
 
-## 📑 Sumário
+1. Browse product listings and details.
+2. Register/sign in and add available products to the session cart.
+3. Review quantities and totals.
+4. Submit checkout: all stock deductions succeed together or roll back.
 
-- [Visão Geral](#visão-geral)
-- [Arquitetura do Projeto](#arquitetura-do-projeto)
-- [Principais Recursos](#principais-recursos)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Estrutura de Pastas](#estrutura-de-pastas)
-- [Configuração e Execução Local](#configuração-e-execução-local)
-- [Deploy no PythonAnywhere](#deploy-no-pythonanywhere)
-- [Boas Práticas e Padrões](#boas-práticas-e-padrões)
-- [Licença](#licença)
+The existing [hosted link](https://jvmessias.pythonanywhere.com/) has not been checked against the current commit. Use local execution for review.
 
----
+## Run locally
 
-## 🧠 Visão Geral
-
-Este projeto implementa uma **loja virtual funcional**, com fluxo completo de cadastro, autenticação, listagem de produtos, carrinho de compras e finalização de pedido.
-
-A aplicação foi estruturada para ser escalável, com separação clara entre as camadas de **negócio, templates, estáticos e rotas**, seguindo os padrões do Django.
-
----
-
-## 🧩 Arquitetura do Projeto
-
-O projeto é dividido em múltiplos apps independentes:
-
-| App | Função |
-|------|--------|
-| **core** | Configurações principais e roteamento global |
-| **loja** | Lógica e exibição de produtos |
-| **carrinho** | Gerenciamento do carrinho de compras via sessão |
-| **conta** | Registro, login e gerenciamento de usuários |
-| **templates** | Estrutura de HTMLs e partials reutilizáveis |
-| **static** | Recursos estáticos (CSS, JS, imagens) |
-
----
-
-## 🚀 Principais Recursos
-
-- 🔐 **Autenticação de usuários** (login, registro, logout)
-- 🛒 **Carrinho de compras persistente** via sessão
-- 🧾 **Listagem e detalhamento de produtos**
-- 💳 **Checkout e fluxo de compra completo**
-- 🖥️ **Interface responsiva com CSS modular**
-- ⚙️ **Filtros e paginação com `django-filter`**
-- 🧰 **Pronto para deploy em PythonAnywhere**
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Python 3.13**
-- **Django 5.2.5**
-- **SQLite** (para ambiente local)
-- **django-filter**
-- **HTML5 / CSS3 (modularizado)**
-- **Gunicorn + WSGI** (deploy)
-
----
-
-## 📂 Estrutura de Pastas
-
-```bash
-progweb/
-├── carrinho/
-├── conta/
-├── core/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── loja/
-├── media/
-├── static/
-│   └── css/
-│       └── styles.css
-├── templates/
-│   ├── base.html
-│   ├── lista_produtos.html
-│   ├── produto_detail.html
-│   └── ...
-├── manage.py
-└── requirements.txt
-```
-
----
-
-## ⚙️ Configuração e Execução Local
-
-### 1️⃣ Clonar o repositório
 ```bash
 git clone https://github.com/joaovitormessias/progweb.git
 cd progweb
-```
-
-### 2️⃣ Criar e ativar o ambiente virtual
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux / Mac
-venv\Scripts\activate     # Windows
-```
-
-### 3️⃣ Instalar dependências
-```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 4️⃣ Aplicar migrações e rodar o servidor
-```bash
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Acesse em **http://127.0.0.1:8000/**
+Use a Python version compatible with the pinned requirements. Open http://127.0.0.1:8000 and create demo products in `/admin/`. Add images only if you have rights to use them.
 
----
+## Technical walkthrough
 
-## ☁️ Deploy no PythonAnywhere
+| Area | Code | Decision |
+| --- | --- | --- |
+| Session cart | [carrinho.py](carrinho/carrinho.py) | Copy nested entries before adding model/Decimal presentation values; stored session data stays JSON serializable |
+| Checkout | [views.py](loja/views.py) | Transaction plus conditional stock updates prevents partial checkout and stale-read overselling |
+| Mutations | [Cart template](templates/carrinho.html) and views | POST with CSRF protection for add, remove, and checkout |
+| Catalogue | [Models](loja/models.py) and [filters](loja/filters.py) | Separate catalogue data and query filtering |
 
-### Estrutura esperada
-```
-/home/usuario/progweb/
-    ├── core/
-    ├── loja/
-    ├── carrinho/
-    ├── conta/
-    ├── static/
-    ├── templates/
-    ├── manage.py
-```
+## Verify
 
-### Configurações importantes
+Run from the repository root:
 
-#### `core/settings.py`
-```python
-ALLOWED_HOSTS = ['seuusuario.pythonanywhere.com']
-
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-```
-
-#### Coletar arquivos estáticos
 ```bash
-python manage.py collectstatic
+python manage.py check
+python manage.py test loja
 ```
 
-#### Mapeamento no painel
-| URL | Diretório |
-|------|------------|
-| `/static/` | `/home/usuario/progweb/staticfiles` |
-| `/media/` | `/home/usuario/progweb/media` |
+Four regression tests cover rollback when a later item is unavailable, POST-only checkout, JSON-safe cart rendering, and successful stock deduction. They passed on SQLite during review. Concurrent production load and the hosted deployment were not tested.
 
----
+## Limits and next steps
 
-## 🧭 Boas Práticas e Padrões
+- Checkout is a simulation: no gateway, order receipt, shipping, refund, or durable purchase record.
+- Prices stored in the cart may differ from later catalogue prices; define an explicit pricing policy before real sales.
+- Development settings contain a development secret and debug mode. Configure deployment secrets, hosts, HTTPS, backups, and media serving before exposure.
+- Add checkout idempotency, persistent orders, and concurrency tests against the intended production database.
 
-- Estrutura modular de apps → facilita manutenção e escalabilidade  
-- Padrão **MVC** (Model-View-Template) aplicado corretamente  
-- Templates DRY (uso de `{% include %}` e `partials`)  
-- Context processors para dados globais (como o carrinho)  
-- Configurações de produção separadas por ambiente (via WSGI e variáveis)  
-- CSS organizado e carregado via `{% static %}`  
-
----
-
-## 🪪 Licença
-
-Este projeto é distribuído sob a licença **MIT**.  
-Sinta-se livre para usar, modificar e contribuir.  
-
-link do site : [link](https://jvmessias.pythonanywhere.com/)
+[Maintainer](https://github.com/joaovitormessias)

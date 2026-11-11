@@ -28,7 +28,7 @@
                                 <td class="text-right">R$ {{ item.preco }}</td>
                                 <td class="text-right">R$ {{ item.preco_total }}</td>
                                 <td class="text-center">
-                                    <a href="{% url 'remover_do_carrinho' produto.id %}" class="remover-link">Remover</a>
+                                    <form method="post" action="{% url 'remover_do_carrinho' produto.id %}">{% csrf_token %}<button type="submit"  class="remover-link">Remover</button></form>
                                 </td>
                             </tr>
                             {% endwith %}
@@ -45,7 +45,7 @@
 
         <div class="botoes-carrinho">
              <a href="{% url 'lista_produtos' %}" class="btn">Continuar comprando</a>
-             <a href="{% url 'checkout' %}" class="btn" style="background-color: var(--cor-sucesso);">Finalizar Compra</a>
+             <form method="post" action="{% url 'checkout' %}">{% csrf_token %}<button type="submit"  class="btn" style="background-color: var(--cor-sucesso);">Finalizar Compra</button></form>
         </div>
 
     {% else %}
