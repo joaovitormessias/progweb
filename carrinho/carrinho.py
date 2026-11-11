@@ -34,19 +34,22 @@ class Carrinho:
     def __iter__(self):
         produto_ids = self.carrinho.keys()
         produtos = Produto.objects.filter(id__in=produto_ids)
-        carrinho_copia = self.carrinho.copy()
+        # Copy each entry: rendering must not put model/Decimal objects into the JSON session.
+        carrinho_copia = {key: value.copy() for key, value in self.carrinho.items()}
 
         for produto in produtos:
             carrinho_copia[str(produto.id)]['produto'] = produto
 
         for item in carrinho_copia.values():
+            if 'produto' not in item:
+                continue  # A product may have been deleted since it was added.
             item['preco'] = Decimal(item['preco'])
             item['preco_total'] = item['preco'] * item['quantidade']
             yield item
 
     def __len__(self):
         return sum(item['quantidade'] for item in self.carrinho.values())
-    
+
     def get_total_preco(self):
         return sum(Decimal(item['preco']) * item['quantidade'] for item in self.carrinho.values())
 
